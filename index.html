@@ -746,8 +746,11 @@
     </div>
 
     <!-- Audio element -->
-    <audio id="backgroundMusic" loop>
-        <source src="https://www.nhaccuatui.com/song/egt8UxUHKB0q" type="audio/mpeg">
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="https://www.bensound.com/bensound-music/bensound-happiness.mp3" type="audio/mpeg">
+        <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg">
+        <source src="https://www.bensound.com/bensound-music/bensound-love.mp3" type="audio/mpeg">
+        <source src="https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-one/zapsplat_multimedia_game_sound_bright_cheerful_melody_001_53820.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
 
@@ -1191,9 +1194,16 @@
         // Set initial volume
         audio.volume = volumeSlider.value;
         
+        // Auto-play when page loads (with user interaction)
+        document.addEventListener('click', function() {
+            if (audio.paused) {
+                audio.play().catch(e => console.log('Auto-play prevented:', e));
+            }
+        }, { once: true });
+        
         // Play button event
         playBtn.addEventListener('click', () => {
-            audio.play();
+            audio.play().catch(e => console.log('Play failed:', e));
         });
         
         // Pause button event
@@ -1205,6 +1215,40 @@
         volumeSlider.addEventListener('input', () => {
             audio.volume = volumeSlider.value;
         });
+        
+        // Handle audio loading errors and try different sources
+        let currentSourceIndex = 0;
+        const audioSources = [
+            'https://www.bensound.com/bensound-music/bensound-happiness.mp3',
+            'https://www.bensound.com/bensound-music/bensound-sunny.mp3',
+            'https://www.bensound.com/bensound-music/bensound-love.mp3',
+            'https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-one/zapsplat_multimedia_game_sound_bright_cheerful_melody_001_53820.mp3'
+        ];
+        
+        audio.addEventListener('error', function(e) {
+            console.log('Audio error, trying next source:', e);
+            currentSourceIndex++;
+            if (currentSourceIndex < audioSources.length) {
+                audio.src = audioSources[currentSourceIndex];
+                audio.load();
+            } else {
+                console.log('All audio sources failed to load');
+            }
+        });
+        
+        // Update button states based on audio state
+        audio.addEventListener('play', () => {
+            playBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+        });
+        
+        audio.addEventListener('pause', () => {
+            playBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+        });
+        
+        // Initially hide pause button
+        pauseBtn.style.display = 'none';
 
         // .textLetter text h2
         let indexText = 0;
